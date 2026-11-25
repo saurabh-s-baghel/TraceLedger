@@ -1,0 +1,33 @@
+# Private learning notes and local inputs
+/private-notes/
+/flow.md
+/explain.md
+/data/private/
+/data/local/
+/logs/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+/.streamlit/secrets.toml
+*.pem
+*.key
+
+# Python environment and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Generated local reports; reviewed examples may live elsewhere
+/reports/generated/
+
+# Operating system files
+.DS_Store
