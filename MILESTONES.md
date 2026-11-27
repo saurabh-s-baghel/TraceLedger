@@ -1,10 +1,16 @@
 # TraceLedger milestones
 
-This tracker separates completed work from planned features. TraceLedger is a defensive learning lab using synthetic data, not evidence of operational incident-response experience.
+This tracker separates completed work from planned features. Individual milestone descriptions record what existed at that checkpoint; later features supersede historical limitations. The current summary below reconciles implementation and publication status. TraceLedger is a defensive learning lab using synthetic data, not evidence of operational incident-response experience.
+
+## Current core status — November 27, 2026
+
+Milestones 1–10 are implemented and committed locally. The last verified fetched GitHub reference includes milestones through subnet classification; five later commits remain ahead of that reference. No fresh remote fetch or deployment was performed during final preparation. Milestone 11 is a local documentation change pending its own review and commit. Routine milestone tags are not used.
+
+Manual checks completed: observed local login attempts produced one evidence-backed finding; the user reviewed dashboard display and rule controls, JSON report evidence and saved assessment, and confirmed Markdown download. Per-run log separation and note identity also have automated coverage. Final regression: 54 unittest methods pass. There are no runtime logs, secrets files, private learning notes, AGENTS.md, or BLUEPRINT.md in the current tracked file list. This is a current-tree review, not a guarantee about all historical commits. The intentionally public disposable demo password is expected in code/docs/tests.
 
 ## Milestone 1 — synthetic authentication fixture
 
-Status: complete locally. Planned Git checkpoint: `milestone-1`; remote publication must be verified separately.
+Status: implemented and committed. The initially proposed tag was dropped; routine tags are not required.
 
 Deliverable: `data/synthetic-auth.jsonl`, containing 12 original fictional sign-in attempts. No records were collected from a real system. Dates are fixed at 2026-01-01 UTC, accounts are fictional, and addresses come from documentation example ranges. Re-reading the file gives the same input; a data generator is not implemented yet.
 
@@ -35,7 +41,7 @@ Limitations: the parser, detector, subnet classifier, dashboard, and integration
 
 ## Milestone 2 — authentication parser
 
-Status: implemented and verified locally; not yet committed or published.
+Status at implementation checkpoint: verified locally. Current commit/publication status is summarized above.
 
 Added `traceledger/parsing.py`, package initialization, and `tests/test_parsing.py`. The parser returns typed authentication events plus line-numbered diagnostics. Timestamps normalize to UTC; addresses become ipaddress objects. It preserves input order and keeps the first valid occurrence of each event ID. Invalid records do not reserve IDs. Blank lines are errors; extra fields are ignored. Required values must be nonempty strings without surrounding whitespace. File access and UTF-8 decoding failures propagate to the caller rather than masquerading as record errors. No detection logic or dashboard is implemented.
 
@@ -55,7 +61,7 @@ Milestone 2 Git publication is tracked separately from these local implementatio
 
 ## Milestone 4 — investigation scenario checks
 
-Status: implemented and verified locally; not yet committed or published.
+Status at implementation checkpoint: verified locally. Current commit/publication status is summarized above.
 
 Extended `tests/test_detection.py` with six scenarios: two independently triggering groups with isolated evidence; qualifying intervals sharing an endpoint; simultaneous failures with unique IDs; mixed timezone offsets through the parser and detector; invalid JSON and duplicate records among valid failures; and isolated failures excluded from finding evidence.
 
@@ -63,7 +69,7 @@ Verification: `python3 -m unittest discover -s tests -v` passed all 22 test meth
 
 ## Milestone 5 — configured subnet context
 
-Status: implemented and verified locally; not yet committed or published.
+Status at implementation checkpoint: verified locally. Current commit/publication status is summarized above.
 
 Added `traceledger/network.py` and `tests/test_network.py`. SubnetClassifier validates labelled CIDR pairs once and classifies IP strings or parsed address objects. Labels must be unique and nonempty; CIDRs must explicitly specify a prefix with host bits zero. Overlapping ranges are rejected, including duplicate CIDRs. IPv4 and IPv6 can coexist. Empty configuration is allowed. Invalid addresses raise errors rather than being labelled unmatched. The unmatched result is "outside configured lab ranges", which says nothing about trust or maliciousness.
 
@@ -73,7 +79,7 @@ Verification: `python3 -m unittest discover -s tests -v` passed all 30 test meth
 
 ## Milestone 6 — reproducible synthetic scenarios
 
-Status: implemented and verified locally; not yet committed or published.
+Status at implementation checkpoint: verified locally. Current commit/publication status is summarized above.
 
 Added `traceledger/synthetic.py`, `tests/test_synthetic.py`, `data/generated-auth.jsonl`, and `data/generated-network.jsonl`. The original 12-event fixture is unchanged. Seed 42 generates 19 authentication records and 19 paired fictional network records with fixed UTC start time. Accounts, source addresses, and routine-success timings vary by seed; scenario structure remains controlled. These examples are not realistic traffic simulation or real collected evidence.
 
@@ -95,7 +101,7 @@ Manual walkthrough: six observed events (five failures and one success) parsed w
 
 ## Milestone 8 — evidence dashboard foundation
 
-Status: implemented and headless tests verified locally; browser walkthrough pending. No commit or publication is claimed.
+Status: committed locally. User browser walkthrough confirmed the dashboard; publication remains separate.
 
 Added `app.py`, `requirements.txt` (direct dependency streamlit==1.67.0), and `tests/test_app.py`; updated README with local launch and virtual-environment test commands. The viewer selects original/generated synthetic auth fixtures or discovered local `lab-auth*.jsonl` sessions. Manual Refresh rereads data and rediscovers sessions. It shows accepted-event counts, line-numbered diagnostics, exact finding evidence, UTC timestamps, and explicitly configured workstation/server/loopback labels. No uploads, continuous monitoring, exports, or case-note persistence are implemented. It does not analyze network JSONL yet.
 
@@ -105,7 +111,7 @@ Run `.venv/bin/python -m streamlit run app.py --server.address 127.0.0.1 --brows
 
 ## Milestone 9 — investigation filters and rule controls
 
-Status: implemented and verified headlessly locally; manual control walkthrough pending. No commit or push is claimed.
+Status: committed locally. User confirmed the investigation controls; publication remains separate.
 
 Updated `app.py`, `tests/test_app.py`, and README. Account/source/outcome filters and inclusive UTC time bounds affect the accepted-event table only. Invalid bounds show a visible error and no table rows. Detection, diagnostics, and headline counts remain based on the full selected dataset. Source-specific filter keys avoid carrying selected values into a different dataset. Threshold and whole-minute window controls recompute findings and display active settings. Finding evidence remains complete regardless of display filters. No network-event correlation or exports are included.
 
@@ -113,11 +119,17 @@ Verification: seven dashboard test methods pass, including four added methods fo
 
 ## Milestone 10 — simulated case notes and report export
 
-Status: implemented and verified headlessly locally; manual download walkthrough pending. No commit or push is claimed.
+Status: committed locally. JSON evidence and assessment were manually inspected; the user confirmed Markdown download. Publication remains separate.
 
 Added traceledger/reporting.py and tests/test_reporting.py; updated app.py, tests/test_app.py, and README. Each finding has four analyst-note fields and JSON/Markdown download controls. Reports separate computed evidence from simulated assessment, include provenance and rule settings, and preserve exact evidence IDs and timestamps. Source, rule parameters, and full finding evidence determine note identity. Notes are transient Streamlit session/widget state and may disappear when widgets are removed or a session ends; downloads are required for retention. No durable storage or escalation action is performed.
 
-Verification: all 54 test methods pass, including three report tests and one additional dashboard test. Checks cover JSON evidence/settings round-trip, source/settings/evidence identity changes, Markdown labels and note separation, and UI notes not carrying to different rules or datasets. Browser download behavior remains for manual review.
+Verification: all 54 test methods pass, including three report tests and one additional dashboard test. Checks cover JSON evidence/settings round-trip, source/settings/evidence identity changes, Markdown labels and note separation, and UI notes not carrying to different rules or datasets. Browser download review was completed after implementation: JSON contents and saved note were inspected and the user confirmed Markdown download. An initial failed download was followed by success; its cause remains unconfirmed.
+
+## Milestone 11 — final core documentation and verification
+
+Status: complete locally, pending review and commit. No push or deployment performed.
+
+Updated README with reproducible setup, architecture, the full observed-login-to-report demonstration, synthetic generation, validation evidence, limitations, and public hosting boundaries. Reconciled historical milestone statuses without claiming remote publication. Re-ran all 54 tests successfully in the existing virtual environment. Reviewed tracked paths and privacy exclusions: runtime logs, personal working documents, and secrets files are not currently tracked. Only synthetic examples and the explicit public demo credential are intended for publication. Earlier history is not erased or certified by this check. Fresh-environment installation and hosted runtime compatibility have not been verified in this milestone.
 
 ## Milestone roadmap
 
@@ -131,10 +143,10 @@ Milestones 2 through 10 are implemented locally as recorded above. Later items r
 | 5 | Add configured subnet context — verified locally | Eight new subnet tests; all 30 test methods pass |
 | 6 | Generate varied synthetic data — verified locally | Six new generator tests; all 36 test methods pass |
 | 7 | Local authentication lab and session evidence — verified locally | Manual evidence finding; all 43 tests pass |
-| 8 | Build dashboard foundation — verified headlessly | Three dashboard tests; all 46 test methods pass; browser walkthrough pending |
-| 9 | Investigation filters and rule controls — verified headlessly | Seven dashboard tests; manual walkthrough pending |
-| 10 | Case notes and exports — verified headlessly | All 54 tests pass; manual download walkthrough pending |
-| 11 | Finish and document core | Verified end-to-end walkthrough and accurate public README |
+| 8 | Build dashboard foundation — verified headlessly | Three dashboard tests; all 46 test methods pass; browser walkthrough confirmed |
+| 9 | Investigation filters and rule controls — verified headlessly | Seven dashboard tests; manual controls confirmed |
+| 10 | Case notes and exports — verified headlessly | All 54 tests pass; manual downloads confirmed |
+| 11 | Finish and document core — complete locally | Updated README, current-tree privacy review, all 54 tests pass |
 
 Optional subsequent extensions: PowerShell format conversion, Azure ingestion and KQL comparison, ServiceNow developer-instance lab tickets, a contextual second rule, and Power BI reporting. None is implemented or required to complete the core lab.
 

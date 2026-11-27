@@ -1,6 +1,41 @@
 # TraceLedger
 A defensive log investigation lab using Python. Implemented: authentication JSONL validation, tested repeated-failure detection, configured subnet context, reproducible synthetic examples, a local authentication simulator, and a Streamlit evidence dashboard. Investigation filters, configurable rules, session-only case notes, and JSON/Markdown case exports are implemented.
 
+## Setup
+
+Use Python 3.11 or newer. Development validation was performed on Python 3.14 with Streamlit 1.67.0; other Python versions have not been verified here. From the repository root:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+The analysis engine and local authentication server use the standard library; the dashboard requires Streamlit and its dependencies. The direct Streamlit version is pinned, but transitive dependencies are not fully locked.
+
+## Architecture
+
+```text
+Synthetic authentication JSONL OR observed local login attempts
+    -> parsing.py: validate fields, normalize UTC/IP values, report bad records
+    -> detection.py: group failures, evaluate windows, retain exact evidence
+    -> network.py: add explicitly configured subnet labels
+    -> app.py: review events, diagnostics, settings, and findings
+    -> reporting.py: export evidence and simulated analyst assessment
+```
+
+`lab/auth_server.py` produces observed local events. `traceledger/synthetic.py` generates controlled examples. The generated network JSONL is a scripted context fixture; network-event parsing and correlation are not implemented in the dashboard.
+
+## Five-minute demonstration
+
+1. Start the dashboard using the command below. Choose the original synthetic fixture: expect 12 accepted events, zero rejected records, and one finding with auth-001 through auth-005.
+2. Raise the threshold to six: the finding disappears. Restore five. Filter the table to lab-casey: Alex's complete finding remains because display filters do not alter detector input.
+3. In another terminal start the local authentication lab. Submit five wrong demo passwords within five minutes, then optionally the correct password.
+4. In the dashboard click Refresh and select the session filename printed by the lab. Inspect the five-failure evidence and loopback labels. Existing sessions remain selectable; timestamps are actual UTC times.
+5. Enter an observation, alternative explanation, missing context, and simulated next step. Leave the note field to apply the edit, then download JSON and Markdown. Check evidence IDs, rule settings, provenance, and assessment text.
+6. Stop both servers with Ctrl+C. Runtime logs stay local. Downloaded reports remain wherever the browser saved them.
+
+The observed lab walkthrough produced five failures and one success, parsed without errors and yielding one finding. Browser review confirmed the dashboard and controls; JSON export contents and the saved observation were inspected, and the user confirmed Markdown download. An earlier download returned “File not found”; a subsequent download succeeded, but its cause was not established.
+
 ## Evidence dashboard
 
 The dashboard uses Streamlit 1.67.0. With the approved virtual environment installed:
@@ -21,7 +56,7 @@ Account, source-IP, outcome, and inclusive UTC start/end filters affect only the
 
 ## Local authentication lab
 
-Requires Python 3.11 or newer; no third-party dependencies for current features. Run commands from the project root.
+The local lab itself uses only the Python standard library. Run commands from the project root.
 
 ```sh
 python3 -m lab.auth_server
@@ -66,3 +101,27 @@ Lab tests open an ephemeral loopback HTTP server, send actual local requests, an
 Each finding has fields for observations, alternative explanations, missing context, and an escalation recommendation. These are analyst-entered simulated assessments, separate from computed evidence. Notes are held only in the Streamlit browser session and can be lost on reload, disconnect, widget removal, or server restart. Download a report to retain them. Different sources, rule settings, or finding evidence use different note identities; notes are not silently transferred between findings. No durable case management is implemented.
 
 Download JSON for structured evidence and Markdown for a readable report. Both include source provenance, rejected-record count, rule parameters, exact finding evidence, simulation labels, and limitations. They export the selected finding, not the complete dataset or all diagnostics. Display filters do not trim exported evidence. Downloads go to your browser's download location, not automatically into the repository. Keep local lab reports private; never enter secrets or personal information in notes. Reports do not send tickets or perform escalation actions.
+
+## Synthetic examples
+
+The original fixture has 12 fictional attempts. The generated example has 19 authentication events and 19 scripted network events. To create another repeatable dataset without overwriting those files:
+
+```sh
+.venv/bin/python -m traceledger.synthetic --seed 99 --output-dir reports/generated/seed-99
+```
+
+The same seed produces identical output for this generator implementation. Scenarios remain controlled: variation is not a realistic traffic model or evidence of effectiveness against unknown attacks.
+
+## Validation results and limits
+
+The final core validation passed 54 unittest methods, including parser, detector, subnet, generator, local HTTP/session, dashboard, and reporting checks. Subtests exercise additional invalid inputs. Tests verify defined behavior; no detection accuracy rate or enterprise performance benchmark is claimed. Human review covered local login activity, dashboard interaction, and report downloads.
+
+This application is a rule-based defensive learning lab. It does not capture arbitrary browser logins, collect enterprise telemetry, prove compromise, automatically remediate, or provide durable incident case management. Shared source addresses can combine users' activity, while distributed account/source patterns can evade this rule. No Azure, ServiceNow, PowerShell, Power BI, or IoT integration is implemented. Coursework concepts informed learning; university solutions are not included.
+
+## Public demo boundary
+
+Deployment has not been performed. A future Streamlit deployment would use repository synthetic fixtures; it would not receive ignored logs from a developer's Mac. Deploy only the dashboard entry point app.py, never the disposable authentication simulator. No hosted ingestion, uploads, or remote link to the local lab is implemented. Review Python/dependency compatibility on the hosting platform before deploying. Once hosting tracks a branch, pushes may trigger deployments and must be reviewed accordingly.
+
+## Privacy and repository contents
+
+Runtime logs, virtual environments, local reports under reports/generated/, secrets files, and private learning notes are excluded. AGENTS.md and BLUEPRINT.md are local working documents, not current tracked files. Earlier Git history may still contain the initial agent instructions; exclusions do not erase history. The displayed demo password is deliberately public test data, never a real credential. Never enter personal information in demo forms or notes. No license has been selected yet.
