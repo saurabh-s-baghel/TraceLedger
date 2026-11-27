@@ -33,14 +33,34 @@ Validation performed using a one-off Python standard-library check: 12 valid JSO
 
 Limitations: the parser, detector, subnet classifier, dashboard, and integrations are not implemented. Expected findings above are fixture expectations, not output from a working detector. Exact-boundary, malformed-input, duplicate, and overlapping-window cases will be added during later testing.
 
-## Remaining milestones
+## Milestone 2 — authentication parser
 
-All items below are planned and require individual implementation review and approval. Tests accompany logic changes.
+Status: implemented and verified locally; not yet committed or published.
+
+Added `traceledger/parsing.py`, package initialization, and `tests/test_parsing.py`. The parser returns typed authentication events plus line-numbered diagnostics. Timestamps normalize to UTC; addresses become ipaddress objects. It preserves input order and keeps the first valid occurrence of each event ID. Invalid records do not reserve IDs. Blank lines are errors; extra fields are ignored. Required values must be nonempty strings without surrounding whitespace. File access and UTF-8 decoding failures propagate to the caller rather than masquerading as record errors. No detection logic or dashboard is implemented.
+
+Verification: `python3 -m unittest discover -s tests -v` passed seven test methods, including invalid-input subcases. Coverage includes all 12 fixture events, UTC conversion, IPv6, malformed/blank lines, missing or invalid fields, duplicate handling, empty input, and extra fields.
+
+## Milestone 3 — repeated-failure detector
+
+Status: implemented and verified locally; publication not yet verified.
+
+Added `traceledger/detection.py` and `tests/test_detection.py`. The detector groups validated failures by account/source IP, sorts without modifying input, and applies an inclusive sliding window (default: five failures in five minutes). Overlapping qualifying evidence intervals merge, retaining unique events; separated intervals remain separate findings. Merged evidence can span longer than the rule window. Successes neither count nor reset failures; destinations do not split groups. Duplicate input IDs and invalid rule settings raise ValueError.
+
+Findings preserve evidence events, first/last evidence times, count, threshold, window, rule identifier, and the label "rule-based lab finding". They do not establish compromise.
+
+Verification: `python3 -m unittest discover -s tests -v` passed all 16 test methods (seven parser, nine detector). The fixture produces exactly one finding for lab-alex with auth-001 through auth-005. Tests also verify inclusive boundaries, separate groups, deterministic ordering, unchanged input, successes, multiple destinations, overlapping and disjoint intervals, custom settings, duplicates, and invalid settings. Dashboard and network classification remain unimplemented.
+
+Milestone 2 Git publication is tracked separately from these local implementation results. Routine milestone tags are no longer part of the workflow.
+
+## Milestone roadmap
+
+Milestones 2 and 3 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
-| 2 | Parse and validate JSONL | Valid Python values and readable invalid-record diagnostics |
-| 3 | Implement repeated-failure detection | Findings with rule settings and exact evidence IDs |
+| 2 | Parse and validate JSONL — verified locally | Seven passing test methods; valid Python values and readable diagnostics |
+| 3 | Implement repeated-failure detection — verified locally | Nine passing detector test methods; fixture produces the expected evidence |
 | 4 | Exercise detection edge cases | Passing threshold, boundary, grouping, duplicate, and ordering tests |
 | 5 | Add configured subnet context | Tested ipaddress classification with explicit unmatched labels |
 | 6 | Generate varied synthetic data | Reproducible authentication/network scenarios with known expectations |
