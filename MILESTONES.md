@@ -61,16 +61,26 @@ Extended `tests/test_detection.py` with six scenarios: two independently trigger
 
 Verification: `python3 -m unittest discover -s tests -v` passed all 22 test methods (seven parser and 15 detector). Four valid failures plus rejected records produce no finding; adding a fifth valid failure produces one finding while retaining the two parser diagnostics. No production changes were needed. These tests validate defined lab behavior, not operational threat-detection effectiveness.
 
+## Milestone 5 — configured subnet context
+
+Status: implemented and verified locally; not yet committed or published.
+
+Added `traceledger/network.py` and `tests/test_network.py`. SubnetClassifier validates labelled CIDR pairs once and classifies IP strings or parsed address objects. Labels must be unique and nonempty; CIDRs must explicitly specify a prefix with host bits zero. Overlapping ranges are rejected, including duplicate CIDRs. IPv4 and IPv6 can coexist. Empty configuration is allowed. Invalid addresses raise errors rather than being labelled unmatched. The unmatched result is "outside configured lab ranges", which says nothing about trust or maliciousness.
+
+Membership includes the IPv4 network and broadcast addresses; this is range classification, not a claim that every member is an assignable host. No real network interfaces, routes, ownership, or VLANs are discovered. Configuration is supplied in Python; no dashboard configuration or network-event collection exists yet.
+
+Verification: `python3 -m unittest discover -s tests -v` passed all 30 test methods, including eight new subnet tests for IPv4/IPv6 boundaries, individual-address ranges, empty configuration, invalid inputs, ambiguous ranges, and parser-to-detector-to-classifier integration. The fixture finding's source maps to workstation lab and its destinations map to server lab without changing evidence. Test labels use explicit synthetic configuration, not inferred device roles.
+
 ## Milestone roadmap
 
-Milestones 2 through 4 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 5 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
 | 2 | Parse and validate JSONL — verified locally | Seven passing test methods; valid Python values and readable diagnostics |
 | 3 | Implement repeated-failure detection — verified locally | Nine passing detector test methods; fixture produces the expected evidence |
 | 4 | Exercise investigation scenarios — verified locally | Six additional scenarios; all 22 test methods pass |
-| 5 | Add configured subnet context | Tested ipaddress classification with explicit unmatched labels |
+| 5 | Add configured subnet context — verified locally | Eight new subnet tests; all 30 test methods pass |
 | 6 | Generate varied synthetic data | Reproducible authentication/network scenarios with known expectations |
 | 7 | Build dashboard foundation | Separately approved environment/dependency setup; event and error views |
 | 8 | Add investigation views | Filters, finding evidence, network context, and rule controls |
