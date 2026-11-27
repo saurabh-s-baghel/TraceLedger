@@ -83,9 +83,19 @@ Run `python3 -m traceledger.synthetic --seed 42 --output-dir data` only when tho
 
 Verification: generated both example files through the command-line entry point. All 36 test methods passed, including six new generator tests covering stable output bytes, variation across seeds, four seeds with the expected parser/detector result, network field structure and pairing, UTC normalization, and preservation of existing outputs. No dependencies were added.
 
+## Milestone 7 — local authentication lab and session evidence
+
+Status: implemented and verified locally. Manual browser activity was analyzed successfully; per-run session separation has automated verification. No publication is claimed.
+
+Added `lab/auth_server.py` and `tests/test_auth_lab.py`, expanded README with run/analyze commands, and clarified the existing ignored `/logs/` directory. The standard-library server binds only to 127.0.0.1. The fixed fictional account lab-user uses the public disposable fixture password demo-only-password. It records actual UTC times, UUID event IDs, loopback endpoints, and success/failure outcomes. Passwords and arbitrary account labels are not stored. Host/origin checks reject unexpected browser origins. No sessions, lockouts, or remediation are implemented; this is not production authentication.
+
+Automated verification: all 41 test methods pass after granting loopback network access (the initial restricted-sandbox run could not bind sockets). Five HTTP lab tests exercise the form, success/failure logging, exclusion of submitted passwords, rejection of arbitrary accounts and cross-origin/wrong-host requests, and actual five-failure HTTP activity flowing through the parser into one evidence-backed finding. Tests use temporary logs and ephemeral loopback ports; no manual runtime log was created by this verification.
+
+Manual walkthrough: six observed events (five failures and one success) parsed without errors and produced one finding containing the five failed-attempt IDs. Runtime evidence remains local. Each new server run now reserves a separate empty `logs/lab-auth-<UTC-start>-<UUID>.jsonl` and prints its path; previous logs are preserved. README analysis requires selecting that exact path. All 43 tests pass, including two added checks for unique session paths, preservation of existing evidence, and separate restarted-server HTTP activity. Session files are not automatically deleted. All activity remains an explicitly controlled local lab; diverse source networks and real enterprise traffic are not demonstrated.
+
 ## Milestone roadmap
 
-Milestones 2 through 6 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 7 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
@@ -94,10 +104,11 @@ Milestones 2 through 6 are implemented locally as recorded above. Later items re
 | 4 | Exercise investigation scenarios — verified locally | Six additional scenarios; all 22 test methods pass |
 | 5 | Add configured subnet context — verified locally | Eight new subnet tests; all 30 test methods pass |
 | 6 | Generate varied synthetic data — verified locally | Six new generator tests; all 36 test methods pass |
-| 7 | Build dashboard foundation | Separately approved environment/dependency setup; event and error views |
-| 8 | Add investigation views | Filters, finding evidence, network context, and rule controls |
-| 9 | Add case notes and exports | Simulated assessment, alternative explanations, JSON/Markdown reports |
-| 10 | Finish and document core | Verified end-to-end walkthrough and accurate public README |
+| 7 | Local authentication lab and session evidence — verified locally | Manual evidence finding; all 43 tests pass |
+| 8 | Build dashboard foundation | Separately approved environment/dependency setup; event and error views |
+| 9 | Add investigation views | Filters, finding evidence, network context, and rule controls |
+| 10 | Add case notes and exports | Simulated assessment, alternative explanations, JSON/Markdown reports |
+| 11 | Finish and document core | Verified end-to-end walkthrough and accurate public README |
 
 Optional subsequent extensions: PowerShell format conversion, Azure ingestion and KQL comparison, ServiceNow developer-instance lab tickets, a contextual second rule, and Power BI reporting. None is implemented or required to complete the core lab.
 

@@ -6,6 +6,7 @@
 /explain.md
 /data/private/
 /data/local/
+# Runtime authentication lab events stay local
 /logs/
 
 # Secrets and local configuration
