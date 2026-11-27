@@ -1,12 +1,13 @@
 """Known outcomes and boundaries for the repeated-failure lab rule."""
 
+import json
 import unittest
 from datetime import datetime, timedelta, timezone
 from ipaddress import ip_address
 from pathlib import Path
 
 from traceledger.detection import detect_repeated_failures
-from traceledger.parsing import AuthEvent, read_auth_log
+from traceledger.parsing import AuthEvent, parse_auth_lines, read_auth_log
 
 
 def event(number, seconds, account="lab-user", source="192.0.2.1",
@@ -17,6 +18,78 @@ def event(number, seconds, account="lab-user", source="192.0.2.1",
 
 
 class DetectionTests(unittest.TestCase):
+    def test_two_triggering_groups_keep_their_own_evidence(self):
+        first = [event(n, n * 60) for n in range(5)]
+        second = [event(n + 10, n * 60, account="lab-other",
+                        source="192.0.2.2") for n in range(5)]
+        findings = detect_repeated_failures(list(reversed(first + second)))
+        self.assertEqual(len(findings), 2)
+        actual = {(f.account, str(f.source_ip)): {e.event_id for e in f.evidence}
+                  for f in findings}
+        self.assertEqual(actual, {
+            ("lab-user", "192.0.2.1"): {str(n) for n in range(5)},
+            ("lab-other", "192.0.2.2"): {str(n + 10) for n in range(5)},
+        })
+
+    def test_qualifying_intervals_sharing_endpoint_merge(self):
+        # Two two-event intervals [0, 300] and [300, 600] share an endpoint.
+        events = [event(n, seconds) for n, seconds in enumerate([0, 300, 600])]
+        findings = detect_repeated_failures(events, threshold=2)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual([e.event_id for e in findings[0].evidence], ["0", "1", "2"])
+        self.assertEqual(findings[0].last_seen - findings[0].first_seen,
+                         timedelta(minutes=10))
+
+    def test_simultaneous_unique_failures_count_separately(self):
+        events = [event(n, 0) for n in reversed(range(6))]
+        findings = detect_repeated_failures(events)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].count, 6)
+        self.assertEqual([e.event_id for e in findings[0].evidence],
+                         [str(n) for n in range(6)])
+        self.assertEqual(findings[0].first_seen, findings[0].last_seen)
+
+    def test_mixed_timezone_offsets_produce_correct_finding(self):
+        timestamps = ["2026-01-01T09:00:00Z", "2026-01-01T10:01:00+01:00",
+                      "2026-01-01T04:02:00-05:00", "2026-01-01T09:03:00Z",
+                      "2026-01-01T09:04:00Z"]
+        lines = [json.dumps(dict(event_id=str(n), timestamp=timestamp,
+                                 account="lab-user", source_ip="192.0.2.1",
+                                 destination_ip="198.51.100.1", outcome="failure"))
+                 for n, timestamp in enumerate(timestamps)]
+        parsed = parse_auth_lines(lines)
+        self.assertEqual(parsed.errors, [])
+        findings = detect_repeated_failures(parsed.events)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual([e.event_id for e in findings[0].evidence],
+                         [str(n) for n in range(5)])
+        self.assertEqual(findings[0].last_seen - findings[0].first_seen,
+                         timedelta(minutes=4))
+
+    def test_invalid_records_do_not_inflate_failure_count(self):
+        lines = [json.dumps(dict(event_id=str(n), timestamp=f"2026-01-01T09:0{n}:00Z",
+                                 account="lab-user", source_ip="192.0.2.1",
+                                 destination_ip="198.51.100.1", outcome="failure"))
+                 for n in range(5)]
+        # Invalid JSON, then a duplicate of a valid record between valid attempts.
+        parsed = parse_auth_lines(lines[:2] + ["{broken", lines[0]] + lines[2:4])
+        self.assertEqual([error.line_number for error in parsed.errors], [3, 4])
+        self.assertEqual(len(parsed.events), 4)
+        self.assertEqual(detect_repeated_failures(parsed.events), [])
+        complete = parse_auth_lines(lines[:2] + ["{broken", lines[0]] + lines[2:])
+        self.assertEqual(len(complete.errors), 2)
+        findings = detect_repeated_failures(complete.events)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].count, 5)
+
+    def test_isolated_failures_stay_outside_finding_evidence(self):
+        events = [event(99, -600)] + [event(n, n * 60) for n in range(5)]
+        events.append(event(100, 1200))
+        findings = detect_repeated_failures(events)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual([e.event_id for e in findings[0].evidence],
+                         [str(n) for n in range(5)])
+
     def test_fixture_produces_only_alex_finding(self):
         path = Path(__file__).resolve().parents[1] / "data/synthetic-auth.jsonl"
         parsed = read_auth_log(path)

@@ -53,15 +53,23 @@ Verification: `python3 -m unittest discover -s tests -v` passed all 16 test meth
 
 Milestone 2 Git publication is tracked separately from these local implementation results. Routine milestone tags are no longer part of the workflow.
 
+## Milestone 4 — investigation scenario checks
+
+Status: implemented and verified locally; not yet committed or published.
+
+Extended `tests/test_detection.py` with six scenarios: two independently triggering groups with isolated evidence; qualifying intervals sharing an endpoint; simultaneous failures with unique IDs; mixed timezone offsets through the parser and detector; invalid JSON and duplicate records among valid failures; and isolated failures excluded from finding evidence.
+
+Verification: `python3 -m unittest discover -s tests -v` passed all 22 test methods (seven parser and 15 detector). Four valid failures plus rejected records produce no finding; adding a fifth valid failure produces one finding while retaining the two parser diagnostics. No production changes were needed. These tests validate defined lab behavior, not operational threat-detection effectiveness.
+
 ## Milestone roadmap
 
-Milestones 2 and 3 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 4 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
 | 2 | Parse and validate JSONL — verified locally | Seven passing test methods; valid Python values and readable diagnostics |
 | 3 | Implement repeated-failure detection — verified locally | Nine passing detector test methods; fixture produces the expected evidence |
-| 4 | Exercise detection edge cases | Passing threshold, boundary, grouping, duplicate, and ordering tests |
+| 4 | Exercise investigation scenarios — verified locally | Six additional scenarios; all 22 test methods pass |
 | 5 | Add configured subnet context | Tested ipaddress classification with explicit unmatched labels |
 | 6 | Generate varied synthetic data | Reproducible authentication/network scenarios with known expectations |
 | 7 | Build dashboard foundation | Separately approved environment/dependency setup; event and error views |
