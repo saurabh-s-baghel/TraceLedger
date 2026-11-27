@@ -1,5 +1,17 @@
 # TraceLedger
-A defensive log investigation lab using Python. Implemented: authentication JSONL validation, tested repeated-failure detection, configured subnet context, reproducible synthetic examples, and a local authentication simulator. Streamlit dashboard and case exports are planned, not implemented.
+A defensive log investigation lab using Python. Implemented: authentication JSONL validation, tested repeated-failure detection, configured subnet context, reproducible synthetic examples, a local authentication simulator, and a Streamlit evidence dashboard. Case exports and advanced investigation controls are planned.
+
+## Evidence dashboard
+
+The dashboard uses Streamlit 1.67.0. With the approved virtual environment installed:
+
+```sh
+.venv/bin/python -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false
+```
+
+Open the local URL printed by Streamlit, normally http://127.0.0.1:8501. Select a synthetic fixture or observed lab session. Click Refresh to rediscover sessions and reread the selected file after new attempts. The dashboard displays accepted events, rejected-record diagnostics, findings, exact evidence IDs, and configured subnet labels. All timestamps are UTC. The loopback range 127.0.0.0/8 is explicitly labelled loopback lab; this is not an inferred device identity. There are no uploads, continuous monitoring, exports, case-note storage, or external integrations in this slice. Stop with Ctrl+C. Keep the dashboard local.
+
+`requirements.txt` pins the direct Streamlit dependency; it is not a complete lock of transitive dependencies. To reproduce the approved setup in a fresh environment, use `.venv/bin/python -m pip install -r requirements.txt` after approving installation.
 
 ## Local authentication lab
 
@@ -38,7 +50,7 @@ This is an intentionally minimal authentication simulator: no sessions, secure c
 ## Validation
 
 ```sh
-python3 -m unittest discover -s tests -v
+.venv/bin/python -m unittest discover -s tests -v
 ```
 
 Lab tests open an ephemeral loopback HTTP server, send actual local requests, and store temporary logs outside the repository. Other tests cover parser validation, detection boundaries and evidence, subnet membership, and synthetic reproducibility. See `MILESTONES.md` for recorded results and planned work.

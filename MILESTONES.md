@@ -93,9 +93,19 @@ Automated verification: all 41 test methods pass after granting loopback network
 
 Manual walkthrough: six observed events (five failures and one success) parsed without errors and produced one finding containing the five failed-attempt IDs. Runtime evidence remains local. Each new server run now reserves a separate empty `logs/lab-auth-<UTC-start>-<UUID>.jsonl` and prints its path; previous logs are preserved. README analysis requires selecting that exact path. All 43 tests pass, including two added checks for unique session paths, preservation of existing evidence, and separate restarted-server HTTP activity. Session files are not automatically deleted. All activity remains an explicitly controlled local lab; diverse source networks and real enterprise traffic are not demonstrated.
 
+## Milestone 8 — evidence dashboard foundation
+
+Status: implemented and headless tests verified locally; browser walkthrough pending. No commit or publication is claimed.
+
+Added `app.py`, `requirements.txt` (direct dependency streamlit==1.67.0), and `tests/test_app.py`; updated README with local launch and virtual-environment test commands. The viewer selects original/generated synthetic auth fixtures or discovered local `lab-auth*.jsonl` sessions. Manual Refresh rereads data and rediscovers sessions. It shows accepted-event counts, line-numbered diagnostics, exact finding evidence, UTC timestamps, and explicitly configured workstation/server/loopback labels. No uploads, continuous monitoring, exports, or case-note persistence are implemented. It does not analyze network JSONL yet.
+
+Verification: all 46 test methods pass in the installed virtual environment, including three Streamlit AppTest methods. Tests verify both synthetic datasets, exact fixture evidence, session selection and refresh using temporary logs, invalid-record visibility, loopback context, and readable handling of inaccessible files. Tests do not alter user runtime logs. The tests use Streamlit's headless app execution, not a browser visual walkthrough. The dependency file pins Streamlit only, not its complete transitive dependency set.
+
+Run `.venv/bin/python -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false` and inspect the displayed local URL. Keep runtime logs excluded and the server local.
+
 ## Milestone roadmap
 
-Milestones 2 through 7 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 8 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
@@ -105,7 +115,7 @@ Milestones 2 through 7 are implemented locally as recorded above. Later items re
 | 5 | Add configured subnet context — verified locally | Eight new subnet tests; all 30 test methods pass |
 | 6 | Generate varied synthetic data — verified locally | Six new generator tests; all 36 test methods pass |
 | 7 | Local authentication lab and session evidence — verified locally | Manual evidence finding; all 43 tests pass |
-| 8 | Build dashboard foundation | Separately approved environment/dependency setup; event and error views |
+| 8 | Build dashboard foundation — verified headlessly | Three dashboard tests; all 46 test methods pass; browser walkthrough pending |
 | 9 | Add investigation views | Filters, finding evidence, network context, and rule controls |
 | 10 | Add case notes and exports | Simulated assessment, alternative explanations, JSON/Markdown reports |
 | 11 | Finish and document core | Verified end-to-end walkthrough and accurate public README |
