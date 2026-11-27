@@ -8,6 +8,7 @@ import streamlit as st
 from traceledger.detection import detect_repeated_failures
 from traceledger.network import SubnetClassifier
 from traceledger.parsing import read_auth_log
+from traceledger.reporting import NOTE_FIELDS, build_report, finding_key, report_json, report_markdown
 
 
 ROOT = Path(__file__).resolve().parent
@@ -120,6 +121,22 @@ def main():
             st.caption("Overlapping qualifying windows merge; the full evidence period may exceed five minutes.")
             st.dataframe([event_row(event) for event in finding.evidence], hide_index=True)
             st.caption("Possible explanations include password guessing, a forgotten password, or stale application credentials. Additional context is needed before escalation.")
+            identity = finding_key(finding, selected)
+            st.write("Simulated case notes")
+            st.caption("Notes remain in this browser session until downloaded; they are not written to the repository. Do not enter personal information or secrets.")
+            notes = {field: st.text_area(field.replace("_", " ").capitalize(),
+                                        key=f"case:{identity}:{field}", max_chars=5000)
+                     for field in NOTE_FIELDS}
+            report = build_report(finding, selected,
+                                  "synthetic fixture" if selected.startswith("Synthetic")
+                                  else "observed authorized loopback authentication lab",
+                                  notes, rejected_records=len(result.errors))
+            st.download_button("Download JSON report", report_json(report),
+                               file_name=f"traceledger-{identity[:12]}.json",
+                               mime="application/json", key=f"json:{identity}")
+            st.download_button("Download Markdown report", report_markdown(report),
+                               file_name=f"traceledger-{identity[:12]}.md",
+                               mime="text/markdown", key=f"markdown:{identity}")
     st.caption("Subnet labels are explicitly configured descriptions, not inferred device identity, trust, or VLAN membership. Refresh is manual; this is not continuous monitoring.")
 
 

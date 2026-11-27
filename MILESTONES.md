@@ -111,9 +111,17 @@ Updated `app.py`, `tests/test_app.py`, and README. Account/source/outcome filter
 
 Verification: seven dashboard test methods pass, including four added methods for independent display filtering, source/outcome selection, inclusive/invalid time bounds, and rule-setting changes with displayed parameters. The full suite passed all 50 test methods.
 
+## Milestone 10 — simulated case notes and report export
+
+Status: implemented and verified headlessly locally; manual download walkthrough pending. No commit or push is claimed.
+
+Added traceledger/reporting.py and tests/test_reporting.py; updated app.py, tests/test_app.py, and README. Each finding has four analyst-note fields and JSON/Markdown download controls. Reports separate computed evidence from simulated assessment, include provenance and rule settings, and preserve exact evidence IDs and timestamps. Source, rule parameters, and full finding evidence determine note identity. Notes are transient Streamlit session/widget state and may disappear when widgets are removed or a session ends; downloads are required for retention. No durable storage or escalation action is performed.
+
+Verification: all 54 test methods pass, including three report tests and one additional dashboard test. Checks cover JSON evidence/settings round-trip, source/settings/evidence identity changes, Markdown labels and note separation, and UI notes not carrying to different rules or datasets. Browser download behavior remains for manual review.
+
 ## Milestone roadmap
 
-Milestones 2 through 9 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 10 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
@@ -125,7 +133,7 @@ Milestones 2 through 9 are implemented locally as recorded above. Later items re
 | 7 | Local authentication lab and session evidence — verified locally | Manual evidence finding; all 43 tests pass |
 | 8 | Build dashboard foundation — verified headlessly | Three dashboard tests; all 46 test methods pass; browser walkthrough pending |
 | 9 | Investigation filters and rule controls — verified headlessly | Seven dashboard tests; manual walkthrough pending |
-| 10 | Add case notes and exports | Simulated assessment, alternative explanations, JSON/Markdown reports |
+| 10 | Case notes and exports — verified headlessly | All 54 tests pass; manual download walkthrough pending |
 | 11 | Finish and document core | Verified end-to-end walkthrough and accurate public README |
 
 Optional subsequent extensions: PowerShell format conversion, Azure ingestion and KQL comparison, ServiceNow developer-instance lab tickets, a contextual second rule, and Power BI reporting. None is implemented or required to complete the core lab.

@@ -13,6 +13,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DashboardTests(unittest.TestCase):
+    def test_notes_do_not_carry_to_changed_source_or_rule(self):
+        app = self.app().run()
+        app.text_area[0].input("Observed five failed attempts").run()
+        self.assertEqual(app.text_area[0].value, "Observed five failed attempts")
+        app.number_input[1].set_value(4).run()
+        self.assertEqual(app.text_area[0].value, "")
+        app.text_area[0].input("Four-minute review").run()
+        app.selectbox[0].select("Synthetic: generated scenario").run()
+        self.assertEqual(len(app.exception), 0)
+        self.assertEqual(app.text_area[0].value, "")
+
     def test_display_filters_do_not_remove_finding_evidence(self):
         app = self.app().run()
         app.multiselect[0].select("lab-casey").run()
