@@ -1,6 +1,7 @@
 """Local evidence viewer for synthetic fixtures and observed lab sessions."""
 
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 
 import streamlit as st
 
@@ -43,12 +44,18 @@ def main():
         ("server lab", "198.51.100.0/24"),
         ("loopback lab", "127.0.0.0/8"),
     ])
-    findings = detect_repeated_failures(result.events)
+    st.subheader("Detection settings")
+    threshold = st.number_input("Failure threshold", min_value=1, max_value=1000,
+                                value=5, step=1, key="threshold")
+    minutes = st.number_input("Window (minutes)", min_value=1, max_value=1440,
+                              value=5, step=1, key="window_minutes")
+    findings = detect_repeated_failures(result.events, threshold=int(threshold),
+                                         window=timedelta(minutes=int(minutes)))
     columns = st.columns(3)
     columns[0].metric("Accepted events", len(result.events))
     columns[1].metric("Rejected records", len(result.errors))
     columns[2].metric("Findings", len(findings))
-    st.caption("Rule: at least 5 failures per account/source in an inclusive 5-minute window. Successes do not reset the count; destinations do not split groups.")
+    st.caption(f"Rule: at least {threshold} failures per account/source in an inclusive {minutes}-minute window. Successes do not reset the count; destinations do not split groups.")
 
     def event_row(event):
         return dict(event_id=event.event_id, timestamp_utc=event.timestamp.isoformat(),
@@ -59,8 +66,41 @@ def main():
                     outcome=event.outcome)
 
     st.subheader("Accepted events")
+    st.caption("Display filters affect only this event table. Detection and finding evidence always use the full selected dataset.")
+    # Source-specific keys prevent stale filter selections crossing datasets.
+    accounts = st.multiselect("Accounts", sorted({e.account for e in result.events}),
+                              key=f"accounts:{selected}")
+    addresses = st.multiselect("Source IPs", sorted({str(e.source_ip) for e in result.events}),
+                               key=f"addresses:{selected}")
+    outcomes = st.multiselect("Outcomes", ["failure", "success"], key=f"outcomes:{selected}")
+    start_text = st.text_input("From UTC (ISO 8601, optional)", key=f"start:{selected}")
+    end_text = st.text_input("Through UTC (ISO 8601, optional)", key=f"end:{selected}")
+    visible = result.events
+    try:
+        bounds = []
+        for text in (start_text, end_text):
+            bound = datetime.fromisoformat(text.replace("Z", "+00:00")) if text else None
+            if bound is not None and (bound.tzinfo is None or bound.utcoffset() != timedelta(0)):
+                raise ValueError("Use an explicit UTC timezone: Z or +00:00.")
+            bounds.append(bound.astimezone(timezone.utc) if bound else None)
+        start, end = bounds
+        if start and end and start > end:
+            raise ValueError("Start must not be later than end.")
+        visible = [e for e in result.events
+                   if (not accounts or e.account in accounts)
+                   and (not addresses or str(e.source_ip) in addresses)
+                   and (not outcomes or e.outcome in outcomes)
+                   and (start is None or e.timestamp >= start)
+                   and (end is None or e.timestamp <= end)]
+    except ValueError as error:
+        st.error(f"Invalid display time filter: {error}")
+        visible = []
+    st.caption(f"Showing {len(visible)} of {len(result.events)} accepted events. Empty selections mean all values.")
     if result.events:
-        st.dataframe([event_row(event) for event in result.events], hide_index=True)
+        if visible:
+            st.dataframe([event_row(event) for event in visible], hide_index=True)
+        else:
+            st.info("No events to display under these filters. Findings below are unchanged by display filters.")
     else:
         st.info("No accepted events yet. Submit a demo attempt and click Refresh.")
     st.subheader("Parsing diagnostics")

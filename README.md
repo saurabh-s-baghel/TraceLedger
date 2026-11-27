@@ -13,6 +13,12 @@ Open the local URL printed by Streamlit, normally http://127.0.0.1:8501. Select 
 
 `requirements.txt` pins the direct Streamlit dependency; it is not a complete lock of transitive dependencies. To reproduce the approved setup in a fresh environment, use `.venv/bin/python -m pip install -r requirements.txt` after approving installation.
 
+### Investigation controls
+
+Failure threshold (1–1000) and window length (1–1440 whole minutes) recompute findings over the full selected file. Each finding displays the parameters used. These interactive limits are dashboard choices, not validated operational thresholds.
+
+Account, source-IP, outcome, and inclusive UTC start/end filters affect only the accepted-event table. Empty selections mean all values; blank time bounds are unbounded. Enter timezone-aware UTC bounds such as `2026-01-01T09:00:00Z`. Invalid or reversed bounds show an error and no table rows. Counts, diagnostics, findings, and complete evidence remain based on the full dataset, preventing filters from silently changing an investigation's evidence. Filter selections are separate for each source. No advanced network-event correlation is implemented.
+
 ## Local authentication lab
 
 Requires Python 3.11 or newer; no third-party dependencies for current features. Run commands from the project root.

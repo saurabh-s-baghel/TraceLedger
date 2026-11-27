@@ -103,9 +103,17 @@ Verification: all 46 test methods pass in the installed virtual environment, inc
 
 Run `.venv/bin/python -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false` and inspect the displayed local URL. Keep runtime logs excluded and the server local.
 
+## Milestone 9 — investigation filters and rule controls
+
+Status: implemented and verified headlessly locally; manual control walkthrough pending. No commit or push is claimed.
+
+Updated `app.py`, `tests/test_app.py`, and README. Account/source/outcome filters and inclusive UTC time bounds affect the accepted-event table only. Invalid bounds show a visible error and no table rows. Detection, diagnostics, and headline counts remain based on the full selected dataset. Source-specific filter keys avoid carrying selected values into a different dataset. Threshold and whole-minute window controls recompute findings and display active settings. Finding evidence remains complete regardless of display filters. No network-event correlation or exports are included.
+
+Verification: seven dashboard test methods pass, including four added methods for independent display filtering, source/outcome selection, inclusive/invalid time bounds, and rule-setting changes with displayed parameters. The full suite passed all 50 test methods.
+
 ## Milestone roadmap
 
-Milestones 2 through 8 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 9 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
@@ -116,7 +124,7 @@ Milestones 2 through 8 are implemented locally as recorded above. Later items re
 | 6 | Generate varied synthetic data — verified locally | Six new generator tests; all 36 test methods pass |
 | 7 | Local authentication lab and session evidence — verified locally | Manual evidence finding; all 43 tests pass |
 | 8 | Build dashboard foundation — verified headlessly | Three dashboard tests; all 46 test methods pass; browser walkthrough pending |
-| 9 | Add investigation views | Filters, finding evidence, network context, and rule controls |
+| 9 | Investigation filters and rule controls — verified headlessly | Seven dashboard tests; manual walkthrough pending |
 | 10 | Add case notes and exports | Simulated assessment, alternative explanations, JSON/Markdown reports |
 | 11 | Finish and document core | Verified end-to-end walkthrough and accurate public README |
 
