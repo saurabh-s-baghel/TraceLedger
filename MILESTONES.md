@@ -71,9 +71,21 @@ Membership includes the IPv4 network and broadcast addresses; this is range clas
 
 Verification: `python3 -m unittest discover -s tests -v` passed all 30 test methods, including eight new subnet tests for IPv4/IPv6 boundaries, individual-address ranges, empty configuration, invalid inputs, ambiguous ranges, and parser-to-detector-to-classifier integration. The fixture finding's source maps to workstation lab and its destinations map to server lab without changing evidence. Test labels use explicit synthetic configuration, not inferred device roles.
 
+## Milestone 6 — reproducible synthetic scenarios
+
+Status: implemented and verified locally; not yet committed or published.
+
+Added `traceledger/synthetic.py`, `tests/test_synthetic.py`, `data/generated-auth.jsonl`, and `data/generated-network.jsonl`. The original 12-event fixture is unchanged. Seed 42 generates 19 authentication records and 19 paired fictional network records with fixed UTC start time. Accounts, source addresses, and routine-success timings vary by seed; scenario structure remains controlled. These examples are not realistic traffic simulation or real collected evidence.
+
+Authentication scenarios: five failures over four minutes followed by a success, five failures six minutes apart for another account/source, and eight routine successes. Expected detector result is exactly one finding with generated-auth-001 through generated-auth-005. Every paired network record is a scripted TCP/443 allow event sharing the authentication timestamp and endpoints. This pairing is synthetic context, not independent corroboration, and does not imply a failed login means a denied network connection. A production network-event parser and network threat detector are not implemented.
+
+Run `python3 -m traceledger.synthetic --seed 42 --output-dir data` only when those output paths do not exist. For another dataset use a fresh output directory. Existing outputs are refused; writing two files is not a transactional operation, so filesystem failures can leave partial output.
+
+Verification: generated both example files through the command-line entry point. All 36 test methods passed, including six new generator tests covering stable output bytes, variation across seeds, four seeds with the expected parser/detector result, network field structure and pairing, UTC normalization, and preservation of existing outputs. No dependencies were added.
+
 ## Milestone roadmap
 
-Milestones 2 through 5 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
+Milestones 2 through 6 are implemented locally as recorded above. Later items remain planned and require individual implementation review and approval. Tests accompany logic changes.
 
 | Number | Goal | Completion evidence |
 |---|---|---|
@@ -81,7 +93,7 @@ Milestones 2 through 5 are implemented locally as recorded above. Later items re
 | 3 | Implement repeated-failure detection — verified locally | Nine passing detector test methods; fixture produces the expected evidence |
 | 4 | Exercise investigation scenarios — verified locally | Six additional scenarios; all 22 test methods pass |
 | 5 | Add configured subnet context — verified locally | Eight new subnet tests; all 30 test methods pass |
-| 6 | Generate varied synthetic data | Reproducible authentication/network scenarios with known expectations |
+| 6 | Generate varied synthetic data — verified locally | Six new generator tests; all 36 test methods pass |
 | 7 | Build dashboard foundation | Separately approved environment/dependency setup; event and error views |
 | 8 | Add investigation views | Filters, finding evidence, network context, and rule controls |
 | 9 | Add case notes and exports | Simulated assessment, alternative explanations, JSON/Markdown reports |
